@@ -66,8 +66,6 @@ def get_health():
 @slack.route('/karmabot_dev-v1_events', methods=['POST'])
 @slack.route('/karmabot-v1_events', methods=['POST'])
 def slack_event():
-    with open("/tmp/debug_events.log", "a") as f: f.write(f"EVENT: {request.get_json()}
-")
     """
         Handle incoming Slack events.
         SLA:
@@ -75,8 +73,6 @@ def slack_event():
          * Must respond within 3 seconds
     """
     eventw = request.get_json()
-    current_app.logger.info(f"DEBUG: Received event with team_id: {eventw.get('team_id', 'MISSING')}")
-    
     eventw["rec_time"] = time.time()
 
     if 'token' not in eventw:
@@ -100,7 +96,7 @@ def slack_event():
                 log_metrics('karmabot_events_passed', None, 'count', 1)
                 eventw["rec_time"] = time.time()
                 karma_controller = get_karma_controller()
-                karma_controller.handle_event(eventw)
+                executor.submit(karma_controller.handle_event, eventw)
             else:
                 current_app.logger.debug("Not match: %s" % eventw['event']['text'])
         elif eventw['event']['type'] == "app_mention":
@@ -109,7 +105,7 @@ def slack_event():
                 log_metrics('karmabot_events_passed', None, 'count', 1)
                 eventw["rec_time"] = time.time()
                 karma_controller = get_karma_controller()
-                karma_controller.handle_mention(eventw)
+                executor.submit(karma_controller.handle_mention, eventw)
 
         else:
             current_app.logger.error("Unknown event type: %s" % eventw['event']['type'])
@@ -141,11 +137,11 @@ def slack_command():
         current_app.logger.debug(command['command'])
         if command['command'] == '/karma':
             karma_controller = get_karma_controller()
-            karma_controller.handle_command(command)
+            executor.submit(karma_controller.handle_command, command)
 
         elif command['command'] == '/badge':
             badges_controller = get_badges_controller()
-            badges_controller.handle_command(command)
+            executor.submit(badges_controller.handle_command, command)
 
         else:
             current_app.logger.info(f"Ignoring unknown command {command['command']}")
@@ -180,14 +176,14 @@ def slack_interaction():
         badges_controller = get_badges_controller()
         if interaction['type'] == "dialog_submission":
             if interaction['callback_id'] == 'karma-badge-create-0':
-                badges_controller.cmd_badge_create_complete(interaction)
+                executor.submit(badges_controller.cmd_badge_create_complete, interaction)
             elif interaction['callback_id'].startswith('karma-badge-update-'):
-                badges_controller.cmd_badge_update_complete(interaction)
+                executor.submit(badges_controller.cmd_badge_update_complete, interaction)
             else:
                 current_app.logger.warning(f"Unknown callback_id {interaction['callback_id']}")
         elif interaction['type'] == "interactive_message":
             if interaction['callback_id'] == 'karma-badge-delete-0':
-                badges_controller.cmd_badge_delete_complete(interaction)
+                executor.submit(badges_controller.cmd_badge_delete_complete, interaction)
             else:
                 current_app.logger.warning(f"Unknown callback_id {interaction['callback_id']}")
         else:

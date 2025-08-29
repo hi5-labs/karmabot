@@ -108,12 +108,14 @@ def command_reply(workspace, url, message):
         return '{"ok": true}'
 
     result = urlfetch.post(url=url,
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            data=json.dumps(message),
                            headers=headers)
     return result
 
 
 def post_attachment(workspace, post):
+    print(f"DEBUG_POST_ATTACHMENT: workspace={workspace}, post={post}", flush=True)
     token = settings.get_bot_token(workspace)
     if not token:
         current_app.logger.warning(f"Requested token for workspace {workspace} but found none")
@@ -129,6 +131,7 @@ def post_attachment(workspace, post):
         return '{"ok": true}'
 
     result = urlfetch.post(url="https://slack.com/api/chat.postMessage",
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            data=json.dumps(post),
                            headers=headers)
     return result
@@ -156,6 +159,7 @@ def dialog_open(workspace, trigger_id, dialog):
         return json.loads('''{"ok": true}''')
 
     result = urlfetch.post(url="https://slack.com/api/dialog.open",
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            data=json.dumps(json_post),
                            headers=headers)
     current_app.logger.debug(result.content)
@@ -186,6 +190,7 @@ def auth_test(token):
                 }''')
 
     result = urlfetch.post(url="https://slack.com/api/auth.test",
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            data=json.dumps(json_post),
                            headers=headers)
     return json.loads(result.content)
@@ -300,6 +305,7 @@ def leave_channel(workspace, channel_id):
     }
 
     result = urlfetch.post(url="https://slack.com/api/channels.kick",
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            data=json.dumps(json_post),
                            headers=headers)
     current_app.logger.debug(result.content)
@@ -332,6 +338,7 @@ def get_direct_im_channel(workspace, user_id):
                           }''')
 
     result = urlfetch.post(url="https://slack.com/api/im.open",
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            data=json.dumps(json_post),
                            headers=headers)
     current_app.logger.debug(result.content)
@@ -359,6 +366,7 @@ def user_group_members(workspace, user_group):
                             ]
                         }''')
     result = urlfetch.post(url=f"https://slack.com/api/usergroups.users.list?usergroup={user_group}&include_disabled=false",  # noqa 501
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            headers=headers)
     current_app.logger.debug(result.content)
     return json.loads(result.content)
@@ -493,6 +501,7 @@ def get_users(workspace, cursor):
                                 }
                             }''')
     result = urlfetch.post(url="https://slack.com/api/users.list?cursor=%s&limit=1000" % cursor,
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            headers=headers)
 
     # self.log.debug(result.content)
@@ -589,6 +598,7 @@ def get_usergroups(workspace):
                                 ]
                             }''')
     result = urlfetch.post(url="https://slack.com/api/usergroups.list?include_count=false&include_users=false",
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
                            headers=headers)
 
     current_app.logger.debug(result.content)
@@ -609,6 +619,7 @@ def get_channel_members(workspace, channel, cursor):
         'Authorization': f"Bearer {token}"
     }
     result = urlfetch.post(
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
         url="https://slack.com/api/conversations.members?channel=%s&cursor=%s&limit=1000" % (channel, cursor),
         headers=headers
     )

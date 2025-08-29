@@ -66,8 +66,6 @@ def get_health():
 @slack.route('/karmabot_dev-v1_events', methods=['POST'])
 @slack.route('/karmabot-v1_events', methods=['POST'])
 def slack_event():
-    with open("/tmp/debug_events.log", "a") as f: f.write(f"EVENT: {request.get_json()}
-")
     """
         Handle incoming Slack events.
         SLA:
@@ -75,8 +73,6 @@ def slack_event():
          * Must respond within 3 seconds
     """
     eventw = request.get_json()
-    current_app.logger.info(f"DEBUG: Received event with team_id: {eventw.get('team_id', 'MISSING')}")
-    
     eventw["rec_time"] = time.time()
 
     if 'token' not in eventw:

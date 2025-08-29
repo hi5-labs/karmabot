@@ -290,7 +290,9 @@ class KarmaController(object):
         }
 
         # slack_client.post_message(channel=eventw['event']['channel'], parse="none", text=msg, thread_ts=thread_ts)
+        current_app.logger.info(f"DEBUG: About to post karma success message: {message}")
         slack_client.post_attachment(eventw['team_id'], post=message)
+        current_app.logger.info(f"DEBUG: Karma success message posted")
 
         return
 
