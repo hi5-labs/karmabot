@@ -110,11 +110,14 @@ def command_reply(workspace, url, message):
     result = urlfetch.post(url=url,
                            data=json.dumps(message),
                            headers=headers)
+    print(f"DEBUG_POST_RESULT: status={result.status_code}, content={result.content.decode('utf-8') if result.content else 'None'}", flush=True)
     return result
 
 
 def post_attachment(workspace, post):
+    print(f"DEBUG_POST_ATTACHMENT: workspace={workspace}, post={post}", flush=True)
     token = settings.get_bot_token(workspace)
+    print(f"DEBUG_POST_ATTACHMENT: token={token}", flush=True)
     if not token:
         current_app.logger.warning(f"Requested token for workspace {workspace} but found none")
         return None
@@ -131,6 +134,7 @@ def post_attachment(workspace, post):
     result = urlfetch.post(url="https://slack.com/api/chat.postMessage",
                            data=json.dumps(post),
                            headers=headers)
+    print(f"DEBUG_POST_RESULT: status={result.status_code}, content={result.content.decode('utf-8') if result.content else 'None'}", flush=True)
     return result
 
 
@@ -155,6 +159,7 @@ def dialog_open(workspace, trigger_id, dialog):
         current_app.logger.info(str(json_post))
         return json.loads('''{"ok": true}''')
 
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url="https://slack.com/api/dialog.open",
                            data=json.dumps(json_post),
                            headers=headers)
@@ -185,6 +190,7 @@ def auth_test(token):
                     "user_id": "W12345678"
                 }''')
 
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url="https://slack.com/api/auth.test",
                            data=json.dumps(json_post),
                            headers=headers)
@@ -299,6 +305,7 @@ def leave_channel(workspace, channel_id):
         'Authorization': f"Bearer {token}"
     }
 
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url="https://slack.com/api/channels.kick",
                            data=json.dumps(json_post),
                            headers=headers)
@@ -331,6 +338,7 @@ def get_direct_im_channel(workspace, user_id):
                             }
                           }''')
 
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url="https://slack.com/api/im.open",
                            data=json.dumps(json_post),
                            headers=headers)
@@ -358,6 +366,8 @@ def user_group_members(workspace, user_group):
                                 "W123A4BC5"
                             ]
                         }''')
+        
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url=f"https://slack.com/api/usergroups.users.list?usergroup={user_group}&include_disabled=false",  # noqa 501
                            headers=headers)
     current_app.logger.debug(result.content)
@@ -492,6 +502,8 @@ def get_users(workspace, cursor):
                                     "next_cursor": "dXNlcjpVMEc5V0ZYTlo="
                                 }
                             }''')
+
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url="https://slack.com/api/users.list?cursor=%s&limit=1000" % cursor,
                            headers=headers)
 
@@ -588,6 +600,8 @@ def get_usergroups(workspace):
                                     }
                                 ]
                             }''')
+
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(url="https://slack.com/api/usergroups.list?include_count=false&include_users=false",
                            headers=headers)
 
@@ -608,6 +622,7 @@ def get_channel_members(workspace, channel, cursor):
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': f"Bearer {token}"
     }
+    print(f"DEBUG_POST_RESULT: {result}", flush=True)
     result = urlfetch.post(
         url="https://slack.com/api/conversations.members?channel=%s&cursor=%s&limit=1000" % (channel, cursor),
         headers=headers

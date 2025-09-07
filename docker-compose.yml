@@ -1,46 +1,50 @@
-version: '3'
+version: '3.8'
+
 services:
-
-  influxdb:
-    image: influxdb
+  mongodb:
+    image: mongo:6.0
+    container_name: karmabot-mongodb
+    restart: unless-stopped
     environment:
-      - INFLUXDB_DB=metrics
-    ports:
-      - 8086:8086
-
-  grafana:
-    image: grafana/grafana
-    ports:
-      - 3000:3000
-
-  metrics:
-    image: telegraf
+      MONGO_INITDB_ROOT_USERNAME: karmabot
+      MONGO_INITDB_ROOT_PASSWORD: karmabot123
     volumes:
-      - ./telegraf.conf:/etc/telegraf/telegraf.conf
-
-  mongo:
-    image: mongo:latest
+      - mongodb_data:/data/db
     ports:
-      - 27017:27017
+      - "27017:27017"
+    networks:
+      - karmabot-network
 
   karmabot:
-    build:
-      context: .
-      dockerfile: Dockerfile
-
-    image: target/karmabot:local
-    ports:
-      - 5000:5000
-    cap_add:
-      - ALL
+    build: .
+    container_name: karmabot-app
+    restart: unless-stopped
     environment:
-      - METRICS_URI=tcp://metrics:8094
-      - METRICS_HTTP_URI=http://user:password@influxdb:8086?db=metrics
-      - FAKE_SLACK=True
-      - RUNTIME_LOG_LEVEL=debug
-      - LOG_LEVEL=DEBUG
-      - MONGODB=mongodb://mongo:27017/
-      - VERIFICATION_TOKEN=v_token
-      - ACCESS_T123456=oauth_token
-      - BOT_T123456=b_token
+      - VERIFICATION_TOKEN=${VERIFICATION_TOKEN}
+      - MONGODB=mongodb://karmabot:karmabot123@mongodb:27017
+      - SLACK_EVENTS_ENDPOINT=/slack_events
+      - KARMA_RATE_LIMIT=60
+      - KARMA_TTL=90
+      - KARMA_COLOR=#af8b2d
+      - USE_VAULT=false
+      - VAULT_URI=
+      - VAULT_TOKEN=
+      - VAULT_BASE=secrets
+      - ACCESS_A09C4RF9HPF=${ACCESS_A09C4RF9HPF}
+      - BOT_A09C4RF9HPF=${BOT_A09C4RF9HPF}
+      - ACCESS_T07101NN0HM=${ACCESS_T07101NN0HM}
+      - BOT_T07101NN0HM=${BOT_T07101NN0HM}
+      - METRICS_URI=
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    networks:
+      - karmabot-network
 
+volumes:
+  mongodb_data:
+
+networks:
+  karmabot-network:
+    driver: bridge
